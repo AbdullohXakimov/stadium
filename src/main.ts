@@ -5,6 +5,7 @@ import * as cookieParser from 'cookie-parser';
 import { ValidationPipe } from '@nestjs/common';
 
 
+// console.log("Salom");
 
 async function bootstrap() {
   const config = new DocumentBuilder()
