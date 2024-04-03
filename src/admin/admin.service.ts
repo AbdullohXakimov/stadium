@@ -18,7 +18,11 @@ export class AdminService {
     @InjectModel(Admin) private adminRepo: typeof Admin,
     private readonly jwtService: JwtService,
   ) {}
-  create(createAdminDto: CreateAdminDto) {
+  async create(createAdminDto: CreateAdminDto) {
+    const { hashed_password } = createAdminDto;
+    const hashed_pass = await bcrypt.hash(hashed_password, 7);
+    createAdminDto.hashed_password = hashed_pass;
+
     return this.adminRepo.create(createAdminDto);
   }
 
@@ -46,6 +50,7 @@ export class AdminService {
     const payload = {
       id: admin.id,
       is_active: admin.is_active,
+      is_creator: admin.is_creator,
     };
 
     const [accessToken, refreshToken] = await Promise.all([
@@ -69,6 +74,7 @@ export class AdminService {
     const admin = await this.adminRepo.findOne({ where: { login } });
     if (!admin) throw new BadRequestException('Admin not found');
     if (!admin.is_active) throw new BadRequestException('Admin is not active');
+    console.log('ok');
 
     const isMatchpass = await bcrypt.compare(password, admin.hashed_password);
 

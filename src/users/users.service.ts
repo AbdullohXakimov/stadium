@@ -15,6 +15,8 @@ import { v4 } from 'uuid';
 import { where } from 'sequelize';
 import { MailService } from '../mail/mail.service';
 import { LoginUserDto } from './dto/login-user.dto';
+import { FindUserDto } from './dto/find-user.dto';
+import { Op } from 'sequelize';
 
 @Injectable()
 export class UsersService {
@@ -164,8 +166,8 @@ export class UsersService {
   }
 
   async refreshToken(userId: number, refreshToken: string, res: Response) {
-    console.log("Oke");
-    
+    console.log('Oke');
+
     const decodedToken = await this.jwtService.decode(refreshToken);
     if (userId !== decodedToken['id']) {
       throw new BadRequestException('User not matched');
@@ -202,7 +204,7 @@ export class UsersService {
   }
 
   findAll() {
-    return `This action returns all users`;
+    return this.userRepo.findAll();
   }
 
   findOne(id: number) {
@@ -215,5 +217,37 @@ export class UsersService {
 
   remove(id: number) {
     return `This action removes a #${id} user`;
+  }
+
+  async findUSerByParams(findUserDto: FindUserDto) {
+    const where = {};
+    if (findUserDto.full_name) {
+      where['full_name'] = {
+        [Op.like]: `%${findUserDto.full_name}%`,
+      };
+    }
+
+    if (findUserDto.email) {
+      where['email'] = {
+        [Op.like]: `%${findUserDto.email}%`,
+      };
+    }
+
+    if (findUserDto.phone) {
+      where['phone'] = {
+        [Op.like]: `%${findUserDto.phone}%`,
+      };
+    }
+
+    if (findUserDto.tg_link) {
+      where['tg_link'] = {
+        [Op.like]: `%${findUserDto.tg_link}%`,
+      };
+    }
+    console.log(where);
+
+    const users = await this.userRepo.findAll({ where });
+    if (users.length == 0) throw new BadRequestException('User not found');
+    return users;
   }
 }

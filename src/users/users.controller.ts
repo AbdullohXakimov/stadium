@@ -8,6 +8,7 @@ import {
   Delete,
   Res,
   HttpCode,
+  UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -17,6 +18,10 @@ import { User } from './entities/user.entity';
 import { Response } from 'express';
 import { LoginUserDto } from './dto/login-user.dto';
 import { CookieGetter } from '../decorators/cookie_getter.decorator';
+import { UserGuard } from '../guards/user.guard';
+import { FindUserDto } from './dto/find-user.dto';
+import { AdminGuard } from '../guards/admin.guard';
+import { AdminSelfGuard } from '../guards/admin.self.guard';
 // import { Response } from 'express';
 
 @ApiTags('USers')
@@ -45,7 +50,7 @@ export class UsersController {
   ) {
     return this.usersService.login(loginUserDto, res);
   }
-
+  @UseGuards(UserGuard)
   @Post('logOut')
   logOut(
     @CookieGetter('refresh_token') refreshToken: string,
@@ -55,13 +60,19 @@ export class UsersController {
     return this.usersService.logOut(refreshToken, res);
   }
 
-  @Post(":id/refresh")
-  refreshToken(@Param("id") id: number,
-  @CookieGetter('refresh_token') refreshToken: string,
-  @Res({passthrough: true}) res: Response){
-    return this.usersService.refreshToken(+id, refreshToken, res)
+  @Post(':id/refresh')
+  refreshToken(
+    @Param('id') id: number,
+    @CookieGetter('refresh_token') refreshToken: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    return this.usersService.refreshToken(+id, refreshToken, res);
   }
-
+  @Post('findByParams')
+  findByParams(@Body() findUserDto: FindUserDto) {
+    return this.usersService.findUSerByParams(findUserDto);
+  }
+  @UseGuards(AdminGuard)
   @Get()
   findAll() {
     return this.usersService.findAll();

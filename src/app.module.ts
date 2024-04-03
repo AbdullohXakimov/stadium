@@ -17,9 +17,22 @@ import { MailModule } from './mail/mail.module';
 import { StadiumsModule } from './stadiums/stadiums.module';
 import { Stadium } from './stadiums/entities/stadium.entity';
 import { MediaModule } from './media/media.module';
+import { BotModule } from './bot/bot.module';
+import { TelegrafModule } from 'nestjs-telegraf';
+import { BOT_NAME } from './app.constants';
+import { CommentsModule } from './comments/comments.module';
+import { Comment } from './comments/entities/comment.entity';
 
 @Module({
   imports: [
+    TelegrafModule.forRootAsync({
+      botName: BOT_NAME,
+      useFactory: () => ({
+        token: process.env.BOT_TOKEN,
+        middlewares: [],
+        include: [BotModule],
+      }),
+    }),
     ConfigModule.forRoot({ envFilePath: '.env', isGlobal: true }),
     SequelizeModule.forRoot({
       dialect: 'postgres',
@@ -28,7 +41,16 @@ import { MediaModule } from './media/media.module';
       username: process.env.USER,
       password: process.env.PASSWORD,
       database: process.env.DB,
-      models: [User, Comfort, Category, Region, Admin, District , Stadium],
+      models: [
+        User,
+        Comfort,
+        Category,
+        Region,
+        Admin,
+        District,
+        Stadium,
+        Comment,
+      ],
       autoLoadModels: true,
       sync: { alter: true },
       logging: false,
@@ -42,6 +64,8 @@ import { MediaModule } from './media/media.module';
     MailModule,
     StadiumsModule,
     MediaModule,
+    BotModule,
+    CommentsModule,
   ],
   controllers: [],
   providers: [],
